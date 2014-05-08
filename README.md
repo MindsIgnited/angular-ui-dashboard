@@ -107,6 +107,15 @@ angular.module('yourApp', [
 ]);
 ```
 
+Controller Scope vs. DataModel
+-----
+
+Widgets inherit controller scope (so normally different widgets will have bindings to different controller scope properties).
+
+DataModel has direct access to widget scope, each widget has separate instance of DataModel.
+
+![Controller Scope vs. DataModel](docs/scope.png "Controller Scope vs. DataModel")
+
 Usage
 -----
 
@@ -196,6 +205,10 @@ angular.module('myApp')
 
 Links
 -----
+
+[malhar-angular-widgets](https://github.com/DataTorrent/malhar-angular-widgets) Widget library (widgets, data models, WebSocket, etc.)
+
+[malhar-dashboard-webapp](https://github.com/DataTorrent/malhar-dashboard-webapp) Demo using this dashboard and widget library
 
 [Node.js](http://nodejs.org/) Software platform built on JavaScript runtime
 
