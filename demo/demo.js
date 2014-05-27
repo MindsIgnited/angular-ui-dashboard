@@ -26,47 +26,75 @@ angular.module('app', [
         templateUrl: 'view.html',
         controller: 'DemoCtrl'
       })
+      .when('/explicit-saving', {
+        templateUrl: 'view.html',
+        controller: 'ExplicitSaveDemoCtrl'
+      })
       .otherwise({
         redirectTo: '/'
       });
   })
-  .controller('DemoCtrl', function ($scope, $interval) {
-    var widgetDefinitions = [
-      {
-        name: 'time',
-        directive: 'wt-time'
-      },
+  .factory('widgetDefinitions', function(RandomDataModel) {
+    return [
       {
         name: 'random',
         directive: 'wt-scope-watch',
         attrs: {
           value: 'randomValue'
         }
-      }
-    ];
-
-    var defaultWidgets = [
-      { name: 'time' },
-      { name: 'random' },
-      { name: 'time' },
-      {
-        name: 'random',
-        style: {
-          width: '50%'
-        }
       },
       {
         name: 'time',
-        style: {
-          width: '50%'
-        }
+        directive: 'wt-time'
+      },
+      {
+        name: 'datamodel',
+        directive: 'wt-scope-watch',
+        dataAttrName: 'value',
+        dataModelType: RandomDataModel
       }
     ];
+  })
+  .value('defaultWidgets', [
+    { name: 'random' },
+    { name: 'time' },
+    { name: 'datamodel' },
+    {
+      name: 'random',
+      style: {
+        width: '50%'
+      }
+    },
+    {
+      name: 'time',
+      style: {
+        width: '50%'
+      }
+    }
+  ])
+  .controller('DemoCtrl', function ($scope, $interval, $window, widgetDefinitions, defaultWidgets) {
+    
+    $scope.dashboardOptions = {
+      widgetButtons: true,
+      widgetDefinitions: widgetDefinitions,
+      defaultWidgets: defaultWidgets,
+      storage: $window.localStorage,
+      storageId: 'demo'
+    };
+
+    $interval(function () {
+      $scope.randomValue = Math.random();
+    }, 500);
+  })
+  .controller('ExplicitSaveDemoCtrl', function ($scope, $interval, $window, widgetDefinitions, defaultWidgets) {
 
     $scope.dashboardOptions = {
       widgetButtons: true,
       widgetDefinitions: widgetDefinitions,
-      defaultWidgets: defaultWidgets
+      defaultWidgets: defaultWidgets,
+      storage: $window.localStorage,
+      storageId: 'explicitSave',
+      explicitSave: true
     };
 
     $interval(function () {
@@ -101,5 +129,25 @@ angular.module('app', [
         value: '=value'
       }
     };
+  })
+  .factory('RandomDataModel', function ($interval, WidgetDataModel) {
+    function RandomDataModel() {
+    }
+
+    RandomDataModel.prototype = Object.create(WidgetDataModel.prototype);
+
+    RandomDataModel.prototype.init = function () {
+      this.intervalPromise = $interval(function () {
+        var value = Math.floor(Math.random() * 100);
+        this.updateScope(value);
+      }.bind(this), 500);
+    };
+
+    RandomDataModel.prototype.destroy = function () {
+      WidgetDataModel.prototype.destroy.call(this);
+      $interval.cancel(this.intervalPromise);
+    };
+
+    return RandomDataModel;
   });
 
